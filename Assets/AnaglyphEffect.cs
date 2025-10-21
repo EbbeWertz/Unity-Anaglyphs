@@ -4,49 +4,48 @@
 [RequireComponent(typeof(Camera))]
 public class AnaglyphEffect : MonoBehaviour
 {
+    [Header("Anaglyph Settings")]
     public Material material;
-    public Camera cam2;
+    public Camera rightEyeCam;
 
-    private RenderTexture rt;
-
+    private RenderTexture rightEyeRT;
 
     private void OnEnable()
     {
-        if (material == null)
-        {
+        if (material == null || rightEyeCam == null)
             return;
-        }
 
-        //cam2.enabled = false;
-        int w = Screen.width, h = Screen.height;
-        rt = RenderTexture.GetTemporary(w, h, 8, RenderTextureFormat.Default);
-        //cam2.targetTexture = rt;
+        int w = Screen.width;
+        int h = Screen.height;
 
-
+        rightEyeRT = new RenderTexture(w, h, 24, RenderTextureFormat.Default);
+        rightEyeCam.targetTexture = rightEyeRT;
     }
 
     private void OnDisable()
     {
-        if (rt != null) { rt.Release(); }
-        //cam2.targetTexture = null;
-        
+        if (rightEyeCam != null)
+            rightEyeCam.targetTexture = null;
+
+        if (rightEyeRT != null)
+        {
+            rightEyeRT.Release();
+            rightEyeRT = null;
+        }
     }
 
-    private void OnRenderImage(RenderTexture source, RenderTexture destination)
+    private void OnRenderImage(RenderTexture leftEyeTex, RenderTexture destination)
     {
-        if (material == null)
+        if (material == null || rightEyeCam == null)
         {
-            Graphics.Blit(source, destination);
+            Graphics.Blit(leftEyeTex, destination);
             return;
         }
 
+        rightEyeCam.Render();
 
-       
-        //cam2.Render();
+        material.SetTexture("_MainTex2", rightEyeRT);
 
-        material.SetTexture("_MainTex2", rt);
-        Graphics.Blit(source, destination, material);
-
-
+        Graphics.Blit(leftEyeTex, destination, material);
     }
 }
