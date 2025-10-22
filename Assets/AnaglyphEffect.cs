@@ -7,14 +7,13 @@ public class AnaglyphEffect : MonoBehaviour
     public Material material;
     public Camera rightEyeCam;
 
+    // is handiger als je hier meteen de seperation kan aanpassen terwijl de cameras perfect parralel blijven
     [Range(0f, 0.1f)]
-    public float eyeSeparation = 0.03f;
+    public float eyeSeparation = 0.02f;
 
-    [Range(0.1f, 50f)]
-    public float convergenceDistance = 10f;
-
-    [Range(0f, 1f)]
-    public float colorBlend = 0.5f; // 0 = pure anaglyph, 1 = full color blend
+    // veranderd de focal point distance. Eerst was die te klein wat zorgt dat rood en blauw veel te ver uit elkaar staan
+    [Range(0.1f, 500f)]
+    public float convergenceDistance = 50f;
 
     private RenderTexture rightEyeRT;
     private Camera leftEyeCam;
@@ -38,16 +37,13 @@ public class AnaglyphEffect : MonoBehaviour
     {
         if (rightEyeCam == null || leftEyeCam == null) return;
 
-        // Offset right eye
+        // Right eye offset veranderen met de eye seperation
         rightEyeCam.transform.position = leftEyeCam.transform.position + leftEyeCam.transform.right * eyeSeparation;
         rightEyeCam.transform.rotation = leftEyeCam.transform.rotation;
 
-        // --- Asymmetric frustum calculation ---
+        // De cameras zijn parrallel maar de projection matrix maken we assymetrisch
         ApplyStereoProjection(leftEyeCam, -eyeSeparation * 0.5f, convergenceDistance);
         ApplyStereoProjection(rightEyeCam, eyeSeparation * 0.5f, convergenceDistance);
-
-        // Pass color-blend strength to shader
-        material.SetFloat("_ColorBlend", colorBlend);
     }
 
     private static void ApplyStereoProjection(Camera cam, float eyeOffset, float convergence)
