@@ -44,12 +44,16 @@
             {
                 fixed3 left = tex2D(_MainTex, i.uv).rgb;
                 fixed3 right = tex2D(_MainTex2, i.uv).rgb;
-
-                // Combineer rood van links, groen+blauw van rechts
-                fixed3 combined = fixed3(left.r, right.g, right.b);
-
+            
+                // Convert right eye to grayscale to preserve color balance
+                fixed luminanceRight = dot(right, fixed3(0.299, 0.587, 0.114));
+            
+                // Mix red from left and GB from right luminance
+                fixed3 combined = fixed3(left.r, luminanceRight, luminanceRight);
+            
                 return fixed4(combined, 1);
             }
+
             ENDCG
         }
     }
